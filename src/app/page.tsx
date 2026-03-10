@@ -8,7 +8,7 @@ const socialLinks = [
     url: 'https://instagram.com/uniq_slouch',
     username: '@uniq_slouch',
     description: '摄影与生活记录',
-    avatar: '/images/avatars/instagram.png',
+    avatar: '/images/avatars/instagram.jpg',
   },
   {
     name: 'GitHub',
@@ -29,7 +29,7 @@ const socialLinks = [
     url: 'https://space.bilibili.com/2990769',
     username: 'UID: 2990769',
     description: '视频与创作',
-    avatar: '/images/avatars/bilibili.png',
+    avatar: '/images/avatars/bilibili.webp',
   },
 ];
 
@@ -77,17 +77,19 @@ export default function Home() {
                 className="group relative bg-surface border border-surfaceHighlight rounded-xl overflow-hidden hover:border-accent transition-all duration-300 glow hover:glow-lg"
               >
                 {/* 头像容器 - 覆盖文字 */}
-                <div className="relative w-full aspect-square overflow-hidden bg-surfaceHighlight">
-                  <img
-                    src={link.avatar}
-                    alt={link.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:-translate-y-8"
-                  />
+                <div className="relative flex items-center justify-center pt-6 pb-2 bg-surfaceHighlight">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-accent/50 group-hover:border-accent transition-colors duration-300 shadow-lg">
+                    <img
+                      src={link.avatar}
+                      alt={link.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:-translate-y-6"
+                    />
+                  </div>
                 </div>
 
                 {/* 文字信息 - 被头像覆盖，悬停时显示 */}
                 <div className="absolute inset-0 flex flex-col justify-end p-4 pointer-events-none">
-                  <div className="transform transition-transform duration-500 translate-y-8 group-hover:translate-y-0">
+                  <div className="transform transition-transform duration-500 translate-y-6 group-hover:translate-y-0">
                     <h3 className="text-sm font-semibold text-center text-white drop-shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
                       {link.name}
                     </h3>
