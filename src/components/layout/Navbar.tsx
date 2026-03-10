@@ -10,20 +10,18 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-surfaceHighlight">
-      <div className="max-w-6xl mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-accent glow">
-            SLŌUCH
-          </Link>
-          <div className="flex gap-6">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-lg border-b border-accent/20 shadow-glow" style={{ boxShadow: '0 4px 30px rgba(124, 58, 237, 0.2)' }}>
+      <div className="max-w-6xl mx-auto px-4 py-3">
+        <div className="flex items-center justify-center">
+          <div className="flex gap-8">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-textSecondary hover:text-accent transition-colors"
+                className="relative text-textSecondary hover:text-accent transition-colors duration-300 text-sm font-medium tracking-wider group"
               >
                 {item.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-px bg-accent transition-all duration-300 group-hover:w-full" />
               </Link>
             ))}
           </div>
