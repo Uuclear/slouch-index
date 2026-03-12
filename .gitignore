@@ -34,3 +34,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 扫描文件（保留空目录）
+/public/scans/*
+!/public/scans/.gitkeep

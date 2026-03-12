@@ -7,6 +7,12 @@ const tools = [
     href: '/tools/weather',
     icon: '🌤️',
   },
+  {
+    title: '文档扫描',
+    description: '摄像头扫描文档，自动识别二维码',
+    href: '/tools/scanner',
+    icon: '📷',
+  },
 ];
 
 export default function ToolsPage() {
