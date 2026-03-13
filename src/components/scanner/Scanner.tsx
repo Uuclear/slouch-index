@@ -26,21 +26,20 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [processedImage, setProcessedImage] = useState<string>('');
   const [qrResults, setQrResults] = useState<{ format: string; data: string }[]>([]);
+  const [openCVReady, setOpenCVReady] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const opencvLoaded = useRef<boolean>(false);
 
   // 加载 OpenCV.js
   useEffect(() => {
     const loadOpenCV = async () => {
-      // 使用 jsdelivr CDN 加载 OpenCV.js
       const opencvUrl = 'https://cdn.jsdelivr.net/npm/opencv.js@1.2.1/opencv.min.js';
 
       return new Promise<void>((resolve, reject) => {
         if ((window as any).cv?.ready) {
-          opencvLoaded.current = true;
+          setOpenCVReady(true);
           resolve();
           return;
         }
@@ -52,7 +51,7 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
           const checkReady = setInterval(() => {
             if ((window as any).cv?.ready) {
               clearInterval(checkReady);
-              opencvLoaded.current = true;
+              setOpenCVReady(true);
               resolve();
             }
           }, 100);
@@ -73,19 +72,23 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(d => d.kind === 'videoinput');
       setCameras(videoDevices);
-      if (videoDevices.length > 0) {
-        setCurrentCamera(videoDevices[0].deviceId);
+      if (videoDevices.length > 0 && !currentCamera) {
+        // 默认选择后置摄像头
+        const backCamera = videoDevices.find(d =>
+          d.label.toLowerCase().includes('back') ||
+          d.label.toLowerCase().includes('environment')
+        );
+        setCurrentCamera(backCamera ? backCamera.deviceId : videoDevices[0].deviceId);
       }
     } catch (err) {
       console.error('枚举摄像头失败:', err);
     }
-  }, []);
+  }, [currentCamera]);
 
   // 启动摄像头
   const startCamera = useCallback(async () => {
     setState('requesting');
     try {
-      // 停止之前的流
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
@@ -93,7 +96,7 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
       const constraints: MediaStreamConstraints = {
         video: {
           deviceId: currentCamera ? { exact: currentCamera } : undefined,
-          facingMode: 'environment',
+          facingMode: currentCamera ? undefined : 'environment',
           width: { ideal: 1920 },
           height: { ideal: 1080 }
         }
@@ -104,6 +107,7 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        await videoRef.current.play();
       }
 
       await enumerateCameras();
@@ -127,82 +131,110 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
   // 切换摄像头
   const switchCamera = useCallback((deviceId: string) => {
     setCurrentCamera(deviceId);
-    if (state === 'preview') {
-      setTimeout(() => startCamera(), 100);
+  }, []);
+
+  useEffect(() => {
+    if (state === 'preview' && currentCamera) {
+      startCamera();
     }
-  }, [state, startCamera]);
+  }, [currentCamera]);
 
   // OpenCV 图像处理
   const processWithOpenCV = useCallback((imageData: string): Promise<string> => {
     const cv = (window as any).cv;
-    if (!cv) return Promise.resolve(imageData);
+    if (!cv || !cv.Mat) {
+      console.log('OpenCV not ready, using original image');
+      return Promise.resolve(imageData);
+    }
 
     return new Promise((resolve) => {
+      const timeoutId = setTimeout(() => {
+        console.error('OpenCV processing timeout');
+        resolve(imageData);
+      }, 10000);
+
       const imgElement = new Image();
       imgElement.onload = () => {
         try {
-          const src = cv.imread(imgElement);
-          const dst = new cv.Mat();
-          const gray = new cv.Mat();
+          let src: any = null;
+          let gray: any = null;
+          let edges: any = null;
+          let contours: any = null;
+          let hierarchy: any = null;
+          let docContour: any = null;
+          let warped: any = null;
 
-          // 转灰度
-          cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+          try {
+            src = cv.imread(imgElement);
+            gray = new cv.Mat();
+            edges = new cv.Mat();
 
-          // Canny 边缘检测
-          const edges = new cv.Mat();
-          cv.Canny(gray, edges, 75, 200);
+            // 转灰度
+            cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
 
-          // 查找轮廓
-          const contours = new cv.MatVector();
-          const hierarchy = new cv.Mat();
-          cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+            // 自适应阈值处理（更适合文档扫描）
+            cv.adaptiveThreshold(gray, edges, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2);
 
-          // 找到最大四边形轮廓
-          let maxArea = 0;
-          let docContour = null;
+            // 查找轮廓
+            contours = new cv.MatVector();
+            hierarchy = new cv.Mat();
+            cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
-          for (let i = 0; i < contours.size(); i++) {
-            const contour = contours.get(i);
-            const area = cv.contourArea(contour);
-            if (area > maxArea) {
-              const perimeter = cv.arcLength(contour, true);
-              const approx = new cv.Mat();
-              cv.approxPolyDP(contour, approx, 0.02 * perimeter, true);
+            // 找到最大四边形轮廓
+            let maxArea = 0;
 
-              if (approx.rows === 4) {
-                maxArea = area;
-                docContour = approx.clone();
+            for (let i = 0; i < contours.size(); i++) {
+              const contour = contours.get(i);
+              const area = cv.contourArea(contour);
+              if (area > maxArea && area > 1000) {
+                const perimeter = cv.arcLength(contour, true);
+                const approx = new cv.Mat();
+                cv.approxPolyDP(contour, approx, 0.02 * perimeter, true);
+
+                if (approx.rows === 4) {
+                  maxArea = area;
+                  if (docContour) docContour.delete();
+                  docContour = approx;
+                } else {
+                  approx.delete();
+                }
               }
-              approx.delete();
+              contour.delete();
             }
+
+            // 透视变换
+            if (docContour && docContour.rows === 4) {
+              const points = getDocPoints(docContour);
+              warped = applyPerspectiveTransform(src, points, cv);
+              cv.imshow(canvasRef.current!, warped);
+            } else {
+              cv.imshow(canvasRef.current!, src);
+            }
+
+            const result = canvasRef.current!.toDataURL('image/jpeg', 0.9);
+            clearTimeout(timeoutId);
+            resolve(result);
+
+          } finally {
+            // 清理内存
+            if (src) src.delete();
+            if (gray) gray.delete();
+            if (edges) edges.delete();
+            if (contours) contours.delete();
+            if (hierarchy) hierarchy.delete();
+            if (docContour) docContour.delete();
+            if (warped) warped.delete();
           }
 
-          // 如果有文档轮廓，进行透视变换
-          if (docContour) {
-            const points = getDocPoints(docContour);
-            const warped = applyPerspectiveTransform(src, points, cv);
-            cv.imshow(canvasRef.current!, warped);
-            warped.delete();
-          } else {
-            cv.imshow(canvasRef.current!, src);
-          }
-
-          const result = canvasRef.current!.toDataURL('image/jpeg', 0.9);
-
-          // 清理内存
-          src.delete();
-          dst.delete();
-          gray.delete();
-          edges.delete();
-          contours.delete();
-          hierarchy.delete();
-          if (docContour) docContour.delete();
-
-          resolve(result);
         } catch (err) {
           console.error('OpenCV 处理错误:', err);
+          clearTimeout(timeoutId);
           resolve(imageData);
         }
+      };
+      imgElement.onerror = () => {
+        clearTimeout(timeoutId);
+        resolve(imageData);
       };
       imgElement.src = imageData;
     });
@@ -210,11 +242,12 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
 
   // 辅助函数：获取文档四个角点
   const getDocPoints = (contour: any): Array<{ x: number; y: number }> => {
-    const points = [];
+    const points: Array<{ x: number; y: number }> = [];
     for (let i = 0; i < contour.rows; i++) {
+      const ptr = contour.data32S;
       points.push({
-        x: contour.data32S[i * 2],
-        y: contour.data32S[i * 2 + 1]
+        x: ptr[i * 2],
+        y: ptr[i * 2 + 1]
       });
     }
     // 排序：左上、右上、右下、左下
@@ -230,13 +263,13 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
     points: Array<{ x: number; y: number }>,
     cv: any
   ): any => {
-    const width = Math.hypot(
-      points[1].x - points[0].x,
-      points[1].y - points[0].y
+    const width = Math.max(
+      Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y),
+      Math.hypot(points[2].x - points[3].x, points[2].y - points[3].y)
     );
-    const height = Math.hypot(
-      points[3].x - points[0].x,
-      points[3].y - points[0].y
+    const height = Math.max(
+      Math.hypot(points[3].x - points[0].x, points[3].y - points[0].y),
+      Math.hypot(points[2].x - points[1].x, points[2].y - points[1].y)
     );
 
     const srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
@@ -281,19 +314,21 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
     // 获取原始图片
     const originalImage = canvas.toDataURL('image/jpeg', 0.9);
     setState('processing');
+    setQrResults([]);
 
     // 使用 OpenCV 处理图像
-    if (opencvLoaded.current) {
+    let processed: string;
+    if (openCVReady) {
       try {
-        const processed = await processWithOpenCV(originalImage);
-        setProcessedImage(processed);
+        processed = await processWithOpenCV(originalImage);
       } catch (err) {
         console.error('OpenCV 处理失败，使用原图:', err);
-        setProcessedImage(originalImage);
+        processed = originalImage;
       }
     } else {
-      setProcessedImage(originalImage);
+      processed = originalImage;
     }
+    setProcessedImage(processed);
 
     // 解析二维码
     try {
@@ -303,13 +338,15 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
         body: JSON.stringify({ imageData: originalImage })
       });
       const qrData = await qrResponse.json();
-      setQrResults(qrData.data?.qrCodes || []);
+      if (qrData.success && qrData.data?.qrCodes) {
+        setQrResults(qrData.data.qrCodes.filter((qr: any) => qr.data && qr.data.length > 0));
+      }
     } catch (err) {
       console.error('二维码解析失败:', err);
     }
 
     stopCamera();
-  }, [processWithOpenCV, stopCamera]);
+  }, [processWithOpenCV, openCVReady, stopCamera]);
 
   // 保存扫描结果
   const saveScan = useCallback(async () => {
@@ -327,15 +364,15 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
           points: []
         })),
         processing: {
-          edgesDetected: opencvLoaded.current,
-          perspectiveCorrected: opencvLoaded.current,
-          enhancementApplied: opencvLoaded.current ? 'opencv' : 'none'
+          edgesDetected: openCVReady,
+          perspectiveCorrected: openCVReady,
+          enhancementApplied: openCVReady ? 'opencv' : 'none'
         },
         originalSize: { width: 0, height: 0 },
         processedSize: { width: 0, height: 0 }
       };
 
-      // 如果需要嵌入 EXIF
+      // 嵌入 EXIF
       const finalImage = embedQRCodeToExif(processedImage, metadata);
       const finalResponse = await fetch(finalImage);
       const finalBlob = await finalResponse.blob();
@@ -370,7 +407,7 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
       setState('error');
       onError?.(msg);
     }
-  }, [processedImage, qrResults, onSave, onError]);
+  }, [processedImage, qrResults, openCVReady, onSave, onError]);
 
   // 重置
   const reset = useCallback(() => {
@@ -378,8 +415,12 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
     setQrResults([]);
     setErrorMessage('');
     setState('idle');
-    startCamera();
-  }, [startCamera]);
+    stopCamera();
+    // 延迟启动摄像头，确保状态已更新
+    setTimeout(() => {
+      startCamera();
+    }, 100);
+  }, [startCamera, stopCamera]);
 
   // 清理
   useEffect(() => {
@@ -424,13 +465,7 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
         <canvas ref={canvasRef} className="hidden" />
 
         {/* 处理后的图片预览 */}
-        {state === 'processing' && (
-          <div className="text-center py-8">
-            <div className="animate-pulse text-accent">处理图像中...</div>
-          </div>
-        )}
-
-        {(state === 'processing' || state === 'saving' || state === 'complete') && processedImage && (
+        {processedImage && state !== 'idle' && state !== 'error' && (
           <div className="mb-4">
             <img
               src={processedImage}
@@ -480,19 +515,21 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
             </button>
           )}
 
-          {(state === 'processing' || state === 'saving') && (
-            <div className="text-accent animate-pulse">处理中...</div>
+          {state === 'processing' && (
+            <div className="text-accent animate-pulse">处理图像中...</div>
+          )}
+
+          {state === 'saving' && (
+            <div className="text-accent animate-pulse">保存中...</div>
           )}
 
           {state === 'complete' && (
-            <>
-              <button
-                onClick={reset}
-                className="px-6 py-3 bg-surfaceHighlight hover:bg-surfaceHighlight/80 rounded-lg font-semibold transition-colors"
-              >
-                继续扫描
-              </button>
-            </>
+            <button
+              onClick={reset}
+              className="px-6 py-3 bg-surfaceHighlight hover:bg-surfaceHighlight/80 rounded-lg font-semibold transition-colors"
+            >
+              继续扫描
+            </button>
           )}
 
           {state === 'error' && (
@@ -507,11 +544,12 @@ export default function Scanner({ onSave, onError }: ScannerProps) {
       </div>
 
       {/* 保存按钮（处理完成后显示） */}
-      {state === 'processing' && processedImage && (
+      {processedImage && state === 'processing' && (
         <div className="mt-4 text-center">
           <button
             onClick={saveScan}
-            className="px-6 py-3 bg-accent hover:bg-accent/80 rounded-lg font-semibold transition-colors"
+            disabled={!processedImage}
+            className="px-6 py-3 bg-accent hover:bg-accent/80 rounded-lg font-semibold transition-colors disabled:opacity-50"
           >
             💾 保存到本地
           </button>
