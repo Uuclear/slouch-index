@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { FilmStrip } from "@/components/film/film-strip";
-import { AlbumSelector } from "@/components/film/album-selector";
+import { AlbumSelectorWrapper } from "@/components/film/album-selector-wrapper";
 
 async function getCategories() {
   const photos = await prisma.photo.findMany({
@@ -32,12 +32,9 @@ export default async function HomePage({
   return (
     <div className="pt-20 pb-12 px-6">
       <div className="mb-12">
-        <AlbumSelector
+        <AlbumSelectorWrapper
           albums={albums}
           selectedId={selectedCategory}
-          onSelect={(id) => {
-            window.location.href = `/?category=${encodeURIComponent(id)}`;
-          }}
         />
       </div>
       <FilmStrip
