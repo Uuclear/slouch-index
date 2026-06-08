@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-light text-neutral-800 dark:bg-dark dark:text-neutral-200 transition-colors duration-300;
+  }
+}
+
+@layer components {
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+  .card-hover:hover {
+    @apply -translate-y-2 shadow-lg;
+  }
+  .card-hover:hover img {
+    @apply scale-105;
+  }
+}

@@ -1,10 +1,6 @@
 {
   "name": "slouch",
   "version": "1.0.0",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -18,13 +14,11 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^7.8.0",
-    "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^3.0.3",
     "framer-motion": "^12.40.0",
     "next": "^14.2.35",
     "next-auth": "^4.24.14",
     "next-themes": "^0.4.6",
-    "prisma": "^7.8.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
@@ -33,11 +27,13 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^25.9.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.5.0",
     "postcss": "^8.5.15",
+    "prisma": "^7.8.0",
     "tailwindcss": "^3.4.19",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
