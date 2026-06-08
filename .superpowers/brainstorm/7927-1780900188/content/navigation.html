@@ -1,0 +1,99 @@
+<h2>导航结构</h2>
+<p class="subtitle">如何组织博客的主要内容区域？</p>
+
+<div class="cards">
+  <div class="card" data-choice="single-page" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup" style="background: #fafafa; padding: 20px; min-height: 180px;">
+        <div style="text-align: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+          <span style="font-weight: 300; letter-spacing: 3px; color: #333;">SLOUCH</span>
+        </div>
+        <div style="padding: 30px 10px;">
+          <div style="margin-bottom: 30px;">
+            <div style="height: 8px; width: 60px; background: #ddd; margin-bottom: 15px;"></div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+              <div style="aspect-ratio: 1; background: #e5e5e5; border-radius: 2px;"></div>
+              <div style="aspect-ratio: 1; background: #e5e5e5; border-radius: 2px;"></div>
+              <div style="aspect-ratio: 1; background: #e5e5e5; border-radius: 2px;"></div>
+            </div>
+          </div>
+          <div style="margin-bottom: 30px;">
+            <div style="height: 8px; width: 60px; background: #ddd; margin-bottom: 15px;"></div>
+            <div style="aspect-ratio: 16/9; background: #e5e5e5; border-radius: 2px;"></div>
+          </div>
+          <div style="margin-bottom: 20px;">
+            <div style="height: 8px; width: 60px; background: #ddd; margin-bottom: 15px;"></div>
+            <div style="aspect-ratio: 16/9; background: #e5e5e5; border-radius: 2px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>单页滚动式</h3>
+      <p>所有内容在一个页面，分区展示，滚动浏览</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="multi-page" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup" style="background: #fafafa; padding: 20px; min-height: 180px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+          <span style="font-weight: 300; letter-spacing: 3px; color: #333;">SLOUCH</span>
+          <div style="display: flex; gap: 20px;">
+            <div style="width: 20px; height: 20px; background: #ccc; border-radius: 50%;"></div>
+            <div style="width: 20px; height: 20px; background: #ccc; border-radius: 50%;"></div>
+            <div style="width: 20px; height: 20px; background: #ccc; border-radius: 50%;"></div>
+            <div style="width: 20px; height: 20px; background: #ccc; border-radius: 50%;"></div>
+          </div>
+        </div>
+        <div style="padding: 30px 10px;">
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+            <div style="aspect-ratio: 1; background: #e5e5e5; border-radius: 2px;"></div>
+            <div style="aspect-ratio: 1; background: #e5e5e5; border-radius: 2px;"></div>
+            <div style="aspect-ratio: 1; background: #e5e5e5; border-radius: 2px;"></div>
+            <div style="aspect-ratio: 1; background: #e5e5e5; border-radius: 2px;"></div>
+            <div style="aspect-ratio: 1; background: #e5e5e5; border-radius: 2px;"></div>
+            <div style="aspect-ratio: 1; background: #e5e5e5; border-radius: 2px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>多页面导航式</h3>
+      <p>独立页面：摄影作品 / GitHub项目 / 博客 / 关于我</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="hybrid" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup" style="background: #fafafa; padding: 20px; min-height: 180px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+          <span style="font-weight: 300; letter-spacing: 3px; color: #333;">SLOUCH</span>
+          <div style="display: flex; gap: 15px;">
+            <div style="width: 15px; height: 3px; background: #aaa;"></div>
+            <div style="width: 15px; height: 3px; background: #ccc;"></div>
+            <div style="width: 15px; height: 3px; background: #ccc;"></div>
+          </div>
+        </div>
+        <div style="padding: 20px 10px;">
+          <div style="margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+              <div style="aspect-ratio: 1; background: #e5e5e5; border-radius: 2px;"></div>
+              <div style="aspect-ratio: 1; background: #e5e5e5; border-radius: 2px;"></div>
+            </div>
+          </div>
+          <div style="margin-bottom: 20px;">
+            <div style="aspect-ratio: 16/9; background: #e5e5e5; border-radius: 2px;"></div>
+          </div>
+          <div style="text-align: center;">
+            <div style="width: 80px; height: 25px; background: #ddd; border-radius: 12px; display: inline-block;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>混合式</h3>
+      <p>首页展示精选内容，点击进入各专区详情页</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,88 @@
+<h2>博客整体设计风格</h2>
+<p class="subtitle">你的个人博客应该呈现什么样的视觉感受？请点击选择</p>
+
+<div class="cards">
+  <div class="card" data-choice="minimalist" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup" style="background: #fff; padding: 20px;">
+        <div class="mock-nav" style="background: none; border-bottom: 1px solid #eee; padding: 10px;">
+          <span style="font-weight: 300; letter-spacing: 2px;">SLOUCH</span>
+        </div>
+        <div style="padding: 60px 20px; text-align: center;">
+          <h1 style="font-weight: 200; font-size: 24px; color: #333;">摄影作品</h1>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 20px;">
+            <div class="placeholder" style="aspect-ratio: 1; background: #f5f5f5;"></div>
+            <div class="placeholder" style="aspect-ratio: 1; background: #f5f5f5;"></div>
+            <div class="placeholder" style="aspect-ratio: 1; background: #f5f5f5;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>极简主义风格</h3>
+      <p>大量留白、干净线条、专注内容本身。适合展示高质量摄影作品，让图片成为主角。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>高端专业感</li><li>加载快速</li><li>突出摄影作品</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>需要高质量图片</li><li>设计需要精准</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="modern-card" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px;">
+        <div class="mock-nav" style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 10px;">
+          <span style="color: white; font-weight: 500;">🏠 首页</span>
+          <span style="color: white; font-weight: 500; margin-left: 15px;">📷 作品</span>
+          <span style="color: white; font-weight: 500; margin-left: 15px;">📝 博客</span>
+        </div>
+        <div style="padding: 20px;">
+          <div style="background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div class="placeholder" style="height: 80px; background: #eee; border-radius: 8px;"></div>
+            <p style="margin-top: 8px; font-size: 12px; color: #666;">项目卡片</p>
+          </div>
+          <div style="background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div class="placeholder" style="height: 80px; background: #eee; border-radius: 8px;"></div>
+            <p style="margin-top: 8px; font-size: 12px; color: #666;">博客卡片</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>现代卡片风格</h3>
+      <p>渐变背景、卡片布局、圆角设计。年轻活泼，适合展示多种内容类型。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>现代感强</li><li>内容分类清晰</li><li>灵活布局</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>视觉元素较多</li><li>可能显得花哨</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="photographer" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup" style="background: #1a1a1a; padding: 20px;">
+        <div class="mock-nav" style="background: transparent; padding: 15px; color: white;">
+          <span style="font-weight: 600; letter-spacing: 1px;">SLOUCH</span>
+          <span style="float: right; opacity: 0.7;">摄影 · 开发 · 写作</span>
+        </div>
+        <div style="margin-top: 20px;">
+          <div class="placeholder" style="height: 150px; background: linear-gradient(45deg, #333, #555); border-radius: 0;"></div>
+          <p style="color: white; margin-top: 15px; font-size: 11px; opacity: 0.6;">大图沉浸式展示</p>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+          <div class="placeholder" style="width: 60px; height: 60px; background: #333;"></div>
+          <div class="placeholder" style="width: 60px; height: 60px; background: #333;"></div>
+          <div class="placeholder" style="width: 60px; height: 60px; background: #333;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>摄影师风格</h3>
+      <p>深色背景、大图展示、沉浸式体验。专为摄影师设计，让作品成为焦点。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>完美展示摄影作品</li><li>专业摄影师定位</li><li>沉浸式体验</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>图片加载要求高</li><li>不适合大量文字内容</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

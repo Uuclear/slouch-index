@@ -1,0 +1,76 @@
+<h2>首页设计（聚焦中心 + 滑动浏览）</h2>
+<p class="subtitle">大图居中 + 相册选择 + 左右滑动</p>
+
+<div class="mockup" style="background: #fafafa; padding: 30px; min-height: 400px;">
+  <div style="display: flex; justify-content: flex-end; align-items: center; padding: 8px 0;">
+    <div style="display: flex; gap: 20px;">
+      <span style="color: #999; font-size: 12px;">作品</span>
+      <span style="color: #999; font-size: 12px;">项目</span>
+      <span style="color: #999; font-size: 12px;">博客</span>
+      <span style="color: #999; font-size: 12px;">关于</span>
+      <div style="width: 14px; height: 14px; border: 1px solid #ddd; border-radius: 50%;"></div>
+    </div>
+  </div>
+
+  <div style="margin-top: 30px;">
+    <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 20px;">
+      <div style="padding: 6px 20px; background: #333; border-radius: 20px; color: #fff; font-size: 11px;">风景</div>
+      <div style="padding: 6px 20px; background: transparent; border: 1px solid #ddd; border-radius: 20px; color: #999; font-size: 11px;">人像</div>
+      <div style="padding: 6px 20px; background: transparent; border: 1px solid #ddd; border-radius: 20px; color: #999; font-size: 11px;">城市</div>
+      <div style="padding: 6px 20px; background: transparent; border: 1px solid #ddd; border-radius: 20px; color: #999; font-size: 11px;">街拍</div>
+    </div>
+
+    <div style="position: relative;">
+      <div style="width: 60%; margin: 0 auto; aspect-ratio: 4/3; background: linear-gradient(135deg, #e8e8e8, #d0d0d0); border-radius: 4px; box-shadow: 0 10px 40px rgba(0,0,0,0.08);"></div>
+      <div style="position: absolute; left: 5%; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border: 1px solid #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <span style="color: #999;">←</span>
+      </div>
+      <div style="position: absolute; right: 5%; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border: 1px solid #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <span style="color: #999;">→</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 30px; text-align: center;">
+      <div style="display: inline-flex; gap: 8px;">
+        <div style="width: 50px; height: 50px; background: #e5e5e5; border-radius: 2px;"></div>
+        <div style="width: 50px; height: 50px; background: #e8e8e8; border-radius: 2px; border: 2px solid #333;"></div>
+        <div style="width: 50px; height: 50px; background: #e5e5e5; border-radius: 2px;"></div>
+        <div style="width: 50px; height: 50px; background: #e5e5e5; border-radius: 2px;"></div>
+        <div style="width: 50px; height: 50px; background: #e5e5e5; border-radius: 2px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px;">
+  <div style="padding: 15px; background: #f5f5f5; border-radius: 8px;">
+    <p class="label">相册选择</p>
+    <ul style="margin-top: 10px; font-size: 14px;">
+      <li>顶部横向排列</li>
+      <li>选中态深色背景</li>
+      <li>未选中态描边</li>
+      <li>点击切换相册内容</li>
+    </ul>
+  </div>
+  <div style="padding: 15px; background: #f5f5f5; border-radius: 8px;">
+    <p class="label">主图展示</p>
+    <ul style="margin-top: 10px; font-size: 14px;">
+      <li>居中大图 (宽60%)</li>
+      <li>阴影增强聚焦感</li>
+      <li>左右箭头滑动</li>
+      <li>支持手势滑动</li>
+    </ul>
+  </div>
+  <div style="padding: 15px; background: #f5f5f5; border-radius: 8px;">
+    <p class="label">缩略图导航</p>
+    <ul style="margin-top: 10px; font-size: 14px;">
+      <li>底部居中排列</li>
+      <li>选中项描边高亮</li>
+      <li>点击跳转到指定图</li>
+    </ul>
+  </div>
+</div>
+
+<div style="margin-top: 30px; text-align: center;">
+  <p style="font-size: 16px; color: #666;">请确认这个聚焦中心 + 滑动浏览的设计</p>
+</div>
