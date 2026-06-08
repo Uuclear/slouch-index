@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("admin")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Photo {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String
+  imageUrl    String   @map("image_url")
+  order       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("photos")
+}
+
+model Post {
+  id          String    @id @default(cuid())
+  title       String
+  content     String
+  excerpt     String?
+  slug        String    @unique
+  published   Boolean   @default(false)
+  tags        String[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  publishedAt DateTime? @map("published_at")
+
+  @@map("posts")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  githubId    String?  @unique @map("github_id")
+  name        String
+  description String?
+  url         String?
+  language    String?
+  stars       Int      @default(0)
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("projects")
+}
