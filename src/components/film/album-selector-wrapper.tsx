@@ -3,7 +3,7 @@
 import { AlbumSelector } from "./album-selector";
 
 interface AlbumSelectorWrapperProps {
-  albums: { id: string; name: string }[];
+  albums: { id: string; name: string; coverUrl?: string }[];
   selectedId: string;
 }
 

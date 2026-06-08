@@ -18,6 +18,24 @@ async function getPhotos(category: string) {
   });
 }
 
+async function getCategoryCovers() {
+  const covers: Record<string, string> = {};
+  const categories = await prisma.photo.findMany({
+    select: { category: true },
+    distinct: ["category"],
+  });
+
+  for (const { category } of categories) {
+    const first = await prisma.photo.findFirst({
+      where: { category },
+      orderBy: { order: "asc" },
+      select: { imageUrl: true },
+    });
+    if (first) covers[category] = first.imageUrl;
+  }
+  return covers;
+}
+
 export default async function HomePage({
   searchParams,
 }: {
@@ -26,17 +44,17 @@ export default async function HomePage({
   const categories = await getCategories();
   const selectedCategory = searchParams.category || categories[0] || "风景";
   const photos = await getPhotos(selectedCategory);
+  const covers = await getCategoryCovers();
 
-  const albums = categories.map((c) => ({ id: c, name: c }));
+  const albums = categories.map((c) => ({
+    id: c,
+    name: c,
+    coverUrl: covers[c],
+  }));
 
   return (
-    <div className="pt-20 pb-12 px-6">
-      <div className="mb-12">
-        <AlbumSelectorWrapper
-          albums={albums}
-          selectedId={selectedCategory}
-        />
-      </div>
+    <div className="pt-20 pb-12 px-4 md:px-6">
+      {/* Film strip at top */}
       <FilmStrip
         photos={photos.map((p) => ({
           id: p.id,
@@ -44,6 +62,14 @@ export default async function HomePage({
           imageUrl: p.imageUrl,
         }))}
       />
+
+      {/* Album selector at bottom */}
+      <div className="mt-16">
+        <AlbumSelectorWrapper
+          albums={albums}
+          selectedId={selectedCategory}
+        />
+      </div>
     </div>
   );
 }
