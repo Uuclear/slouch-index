@@ -11,3 +11,6 @@ next-env.d.ts
 .DS_Store
 *.log
 src/generated/
+
+docs/superpowers/
+.playwright-mcp/

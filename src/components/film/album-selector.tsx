@@ -20,95 +20,181 @@ export function AlbumSelector({
   onSelect,
 }: AlbumSelectorProps) {
   return (
-    <div className="flex justify-center items-end gap-8 flex-wrap">
+    <div className="flex justify-center items-center gap-4 flex-wrap px-4">
       {albums.map((album) => {
         const isSelected = album.id === selectedId;
         return (
           <motion.button
             key={album.id}
             onClick={() => onSelect(album.id)}
-            className="flex flex-col items-center gap-3"
-            whileHover={{ scale: 1.05, y: -4 }}
-            whileTap={{ scale: 0.97 }}
+            className="flex flex-col items-center gap-2 relative"
+            whileHover={{ scale: 1.06, y: -3 }}
+            whileTap={{ scale: 0.95 }}
           >
-            {/* Thumbnail + canister side by side */}
-            <div className="flex items-center gap-2">
-              {/* First photo thumbnail (film emerging) */}
-              {album.coverUrl && (
+            {/* Mini film strip with canister */}
+            <div className="flex items-center">
+              {/* Film leader tip */}
+              <svg
+                width="14"
+                height="50"
+                viewBox="0 0 14 50"
+                className="flex-shrink-0"
+              >
+                <path
+                  d="M0,8 L10,0 L14,0 L14,50 L10,50 L0,42 Z"
+                  fill={isSelected ? "#4a3020" : "#3a2818"}
+                />
+              </svg>
+
+              {/* Film strip body */}
+              <div className="flex flex-col">
+                {/* Top perforations */}
                 <div
-                  className="overflow-hidden rounded-[2px]"
+                  className="flex items-center"
                   style={{
-                    width: "50px",
-                    height: "33px",
-                    boxShadow: isSelected
-                      ? "0 2px 12px rgba(0,0,0,0.2)"
-                      : "0 1px 4px rgba(0,0,0,0.1)",
+                    height: "8px",
+                    backgroundColor: isSelected ? "#3d2a1a" : "#2d1a10",
+                    paddingLeft: "2px",
                   }}
                 >
-                  <img
-                    src={album.coverUrl}
-                    alt=""
-                    className="w-full h-full object-cover"
-                    style={{ filter: isSelected ? "none" : "brightness(0.7)" }}
-                  />
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex-shrink-0 rounded-[0.5px]"
+                      style={{
+                        width: "4px",
+                        height: "3px",
+                        marginRight: "5px",
+                        backgroundColor: "#8b6914",
+                        opacity: 0.6,
+                      }}
+                    />
+                  ))}
                 </div>
-              )}
-              {/* Vertical canister body */}
+
+                {/* Photo area */}
+                <div
+                  className="flex items-center"
+                  style={{
+                    backgroundColor: isSelected ? "#4a3020" : "#3a2818",
+                    padding: "0 3px",
+                    height: "34px",
+                  }}
+                >
+                  {album.coverUrl ? (
+                    <img
+                      src={album.coverUrl}
+                      alt=""
+                      className="h-full w-[45px] object-cover rounded-[1px]"
+                      style={{
+                        filter: isSelected ? "none" : "brightness(0.65)",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="h-full w-[45px] rounded-[1px]"
+                      style={{
+                        backgroundColor: isSelected ? "#3a2818" : "#2a1810",
+                      }}
+                    />
+                  )}
+                </div>
+
+                {/* Bottom perforations */}
+                <div
+                  className="flex items-center"
+                  style={{
+                    height: "8px",
+                    backgroundColor: isSelected ? "#3d2a1a" : "#2d1a10",
+                    paddingLeft: "2px",
+                  }}
+                >
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex-shrink-0 rounded-[0.5px]"
+                      style={{
+                        width: "4px",
+                        height: "3px",
+                        marginRight: "5px",
+                        backgroundColor: "#8b6914",
+                        opacity: 0.6,
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Mini canister on the right */}
               <div
-                className="rounded-[10px] border-2 flex items-center justify-center relative"
+                className="flex-shrink-0 flex items-center justify-center rounded border"
                 style={{
-                  width: "30px",
-                  height: "55px",
+                  width: "18px",
+                  height: "50px",
                   background: isSelected
-                    ? "linear-gradient(135deg, #5a5a5a, #2a2a2a)"
-                    : "linear-gradient(135deg, #4a4a4a, #222)",
-                  borderColor: isSelected ? "#999" : "#555",
+                    ? "linear-gradient(135deg, #555 0%, #2a2a2a 50%, #3a3a3a 100%)"
+                    : "linear-gradient(135deg, #444 0%, #222 50%, #333 100%)",
+                  borderColor: isSelected ? "#777" : "#555",
                   boxShadow: isSelected
-                    ? "0 6px 20px rgba(0,0,0,0.35)"
-                    : "0 3px 10px rgba(0,0,0,0.2)",
+                    ? "0 3px 10px rgba(0,0,0,0.3)"
+                    : "0 1px 4px rgba(0,0,0,0.2)",
+                  marginLeft: "-1px",
+                  position: "relative",
                 }}
               >
+                {/* Film exit slot */}
+                <div
+                  className="absolute"
+                  style={{
+                    left: 0,
+                    top: "20%",
+                    width: "2px",
+                    height: "60%",
+                    background: "#0a0a0a",
+                    borderRadius: "0 1px 1px 0",
+                  }}
+                />
                 {/* Spool */}
                 <div
                   className="rounded-full border flex items-center justify-center"
                   style={{
-                    width: "13px",
-                    height: "13px",
-                    borderColor: isSelected ? "#bbb" : "#777",
+                    width: "10px",
+                    height: "10px",
+                    borderColor: isSelected ? "#999" : "#666",
                   }}
                 >
                   <div
                     className="rounded-full"
                     style={{
-                      width: "5px",
-                      height: "5px",
+                      width: "4px",
+                      height: "4px",
                       background: "#111",
                     }}
                   />
                 </div>
                 {/* Top cap */}
                 <div
-                  className="absolute left-1/2 -translate-x-1/2 rounded-t-[4px]"
+                  className="absolute left-1/2 -translate-x-1/2 rounded-t"
                   style={{
-                    top: "-5px",
-                    width: "16px",
-                    height: "5px",
-                    background: "linear-gradient(to bottom, #777, #555)",
+                    top: "-3px",
+                    width: "12px",
+                    height: "3px",
+                    background: "linear-gradient(to bottom, #666, #444)",
                   }}
                 />
-                {/* Film exit slot */}
+                {/* Bottom cap */}
                 <div
-                  className="absolute rounded-r-[1px]"
+                  className="absolute left-1/2 -translate-x-1/2 rounded-b"
                   style={{
-                    left: 0,
-                    top: "30%",
-                    width: "2px",
-                    height: "40%",
-                    background: "#0a0a0a",
+                    bottom: "-3px",
+                    width: "12px",
+                    height: "3px",
+                    background: "linear-gradient(to top, #666, #444)",
                   }}
                 />
               </div>
             </div>
+
             {/* Album name */}
             <span
               className="text-xs tracking-wide"
@@ -121,6 +207,18 @@ export function AlbumSelector({
             >
               {album.name}
             </span>
+
+            {/* Selected indicator dot */}
+            {isSelected && (
+              <div
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full"
+                style={{
+                  width: "4px",
+                  height: "4px",
+                  backgroundColor: "#8b6914",
+                }}
+              />
+            )}
           </motion.button>
         );
       })}

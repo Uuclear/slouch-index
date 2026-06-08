@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface Photo {
   id: string;
@@ -25,13 +25,9 @@ export function FilmStrip({ photos }: FilmStripProps) {
     setDragDelta(0);
   }, [photos]);
 
-  const goToPrev = useCallback(() => {
-    setCurrentIndex((prev) => Math.max(0, prev - 1));
-  }, []);
-
-  const goToNext = useCallback(() => {
+  const goToPrev = () => setCurrentIndex((prev) => Math.max(0, prev - 1));
+  const goToNext = () =>
     setCurrentIndex((prev) => Math.min(photos.length - 1, prev + 1));
-  }, [photos.length]);
 
   const getClientX = (e: React.MouseEvent | React.TouchEvent) =>
     "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
@@ -59,11 +55,26 @@ export function FilmStrip({ photos }: FilmStripProps) {
     if (!isDragging) return;
     setIsDragging(false);
     const delta = getEndClientX(e) - dragStartX.current;
+
     if (Math.abs(delta) > 50) {
-      if (delta < 0) goToNext();
-      else goToPrev();
+      if (delta < 0) {
+        // Dragging left - try to go next
+        if (currentIndex < photos.length - 1) {
+          goToNext();
+          setDragDelta(0);
+          return;
+        }
+        // Past last photo: snap back smoothly (don't change currentIndex)
+      } else {
+        // Dragging right - go prev
+        goToPrev();
+        setDragDelta(0);
+        return;
+      }
     }
-    setDragDelta(0);
+
+    // Snap back smoothly to current position
+    requestAnimationFrame(() => setDragDelta(0));
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -72,26 +83,39 @@ export function FilmStrip({ photos }: FilmStripProps) {
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const w = rect.width;
-    if (x < w * 0.35) goToPrev();
-    else if (x > w * 0.65) goToNext();
+    if (x < w * 0.3) goToPrev();
+    else if (x > w * 0.7) goToNext();
   };
 
   if (photos.length === 0) {
     return (
-      <div className="bg-[#1a1a1a] rounded-lg p-8 text-center text-neutral-500">
+      <div className="rounded-lg p-8 text-center text-neutral-500" style={{ backgroundColor: "#2a1a0f" }}>
         暂无作品
       </div>
     );
   }
 
-  const perfCount = Math.ceil(photos.length * 22) + 50;
-  const frameNums = photos.map((_, i) => `${String(i + 1).padStart(2, "0")}A`);
+  // Responsive: larger photos on desktop, smaller on mobile
+  const photoWidth = typeof window !== "undefined" && window.innerWidth < 640 ? 260 : 380;
+  const photoHeight = Math.round(photoWidth * 2 / 3);
+  const frameWidth = photoWidth + 20; // 10px margin each side
+  const leaderWidth = 120;
+
+  // Calculate how many perforations we need
+  // Each frame width ~400px, perf spacing ~16px (7px + 9px gap)
+  const perfSpacing = 16;
+  const totalPerfs = Math.ceil(
+    ((photos.length + 2) * frameWidth + leaderWidth) / perfSpacing
+  ) + 10;
 
   return (
     <div
       ref={containerRef}
-      className="relative overflow-hidden max-w-[1000px] mx-auto select-none"
-      style={{ cursor: isDragging ? "grabbing" : "grab" }}
+      className="relative overflow-hidden select-none mx-auto"
+      style={{
+        cursor: isDragging ? "grabbing" : "grab",
+        maxWidth: "1100px",
+      }}
       onMouseDown={handleDragStart}
       onMouseMove={handleDragMove}
       onMouseUp={handleDragEnd}
@@ -103,164 +127,303 @@ export function FilmStrip({ photos }: FilmStripProps) {
       onTouchEnd={handleDragEnd}
       onClick={handleClick}
     >
-      {/* Film strip */}
+      {/* Film strip content */}
       <div
         className="flex flex-col"
         style={{
-          width: `calc(${photos.length * 300 + 180}px + 12vw)`,
-          transform: `translateX(calc(50% - ${(currentIndex + 0.5) * 300}px + ${dragDelta}px))`,
-          transition: isDragging ? "none" : "transform 0.45s cubic-bezier(0.25, 0.1, 0.25, 1)",
+          width: `${(photos.length + 2) * frameWidth + leaderWidth}px`,
+          transform: `translateX(calc(50% - ${(currentIndex + 0.5) * frameWidth}px + ${dragDelta}px))`,
+          transition: isDragging
+            ? "none"
+            : "transform 0.45s cubic-bezier(0.25, 0.1, 0.25, 1)",
         }}
       >
-        {/* Top perforations */}
-        <div className="h-[16px] bg-[#111] flex items-center px-[6px]">
-          {Array.from({ length: perfCount }).map((_, i) => (
+        {/* Top perforations - amber/brown color like real film */}
+        <div
+          className="flex items-center"
+          style={{
+            height: "18px",
+            backgroundColor: "#3d2a1a",
+            paddingLeft: "8px",
+            paddingRight: "8px",
+          }}
+        >
+          {Array.from({ length: totalPerfs }).map((_, i) => (
             <div
               key={i}
-              className="w-[7px] h-[5px] rounded-[0.5px] flex-shrink-0 mr-[9px]"
-              style={{ backgroundColor: "#c8c0b0" }}
+              className="flex-shrink-0 rounded-[0.5px]"
+              style={{
+                width: "7px",
+                height: "5px",
+                marginRight: "9px",
+                backgroundColor: "#8b6914",
+                opacity: 0.7,
+              }}
             />
           ))}
         </div>
 
-        {/* Film body */}
-        <div className="flex bg-[#141414]">
+        {/* Film body - amber/brown translucent color */}
+        <div
+          className="flex items-stretch"
+          style={{ backgroundColor: "#4a3020" }}
+        >
+          {/* Film leader (beginning of film) */}
+          <div
+            className="flex-shrink-0 relative"
+            style={{ width: `${leaderWidth}px` }}
+          >
+            {/* Leader tapered tongue shape */}
+            <svg
+              viewBox="0 0 120 300"
+              className="absolute inset-0 w-full h-full"
+              preserveAspectRatio="none"
+              style={{ filter: "drop-shadow(2px 0 4px rgba(0,0,0,0.3))" }}
+            >
+              {/* Leader body */}
+              <path
+                d="M0,0 L90,0 L120,30 L120,270 L90,300 L0,300 Z"
+                fill="#4a3020"
+              />
+              {/* Lighter stripe (DX code area) */}
+              <rect x="10" y="120" width="60" height="60" fill="#5a4030" opacity="0.6" />
+              {/* Film brand text area */}
+              <rect x="15" y="130" width="50" height="10" fill="#6a5040" opacity="0.4" />
+              <rect x="15" y="145" width="35" height="8" fill="#6a5040" opacity="0.3" />
+            </svg>
+            {/* Arrow indicator */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 left-3"
+              style={{
+                width: 0,
+                height: 0,
+                borderTop: "6px solid transparent",
+                borderBottom: "6px solid transparent",
+                borderLeft: "8px solid #8b6914",
+                opacity: 0.5,
+              }}
+            />
+          </div>
+
+          {/* Photo frames */}
           {photos.map((photo, index) => (
             <div
               key={photo.id}
               className="flex-shrink-0 flex flex-col"
-              style={{ width: "300px" }}
+              style={{ width: `${frameWidth}px` }}
             >
-              {/* Frame number strip */}
-              <div className="h-[14px] flex items-center justify-center">
-                <span className="text-[7px] tracking-wider opacity-30" style={{ color: "#a09880" }}>
-                  {frameNums[index]}
+              {/* Frame number top */}
+              <div className="flex items-center justify-center" style={{ height: "16px" }}>
+                <span
+                  style={{
+                    fontSize: "7px",
+                    letterSpacing: "0.1em",
+                    color: "#8b6914",
+                    opacity: 0.5,
+                  }}
+                >
+                  {String(index + 1).padStart(2, "0")}A
                 </span>
               </div>
               {/* Photo */}
-              <div className="mx-[10px]">
+              <div style={{ padding: "0 10px" }}>
                 <img
                   src={photo.imageUrl}
                   alt={photo.title}
                   draggable={false}
                   className="w-full block rounded-[1px]"
-                  style={{ aspectRatio: "3/2", objectFit: "cover" }}
+                  style={{
+                    height: `${photoHeight}px`,
+                    objectFit: "cover",
+                    boxShadow:
+                      index === currentIndex
+                        ? "0 0 40px rgba(255,200,100,0.15)"
+                        : "none",
+                    transition: "box-shadow 0.3s ease",
+                  }}
                 />
               </div>
-              {/* Bottom frame number strip */}
-              <div className="h-[14px] flex items-center justify-center">
-                <span className="text-[7px] tracking-wider opacity-30" style={{ color: "#a09880" }}>
-                  {frameNums[index]}
+              {/* Frame number bottom */}
+              <div className="flex items-center justify-center" style={{ height: "16px" }}>
+                <span
+                  style={{
+                    fontSize: "7px",
+                    letterSpacing: "0.1em",
+                    color: "#8b6914",
+                    opacity: 0.5,
+                  }}
+                >
+                  {String(index + 1).padStart(2, "0")}A
                 </span>
               </div>
             </div>
           ))}
 
-          {/* Film tail (empty film after last photo) */}
-          <div className="flex-shrink-0" style={{ width: "180px" }}>
-            <div className="h-[14px]" />
-            <div className="mx-[10px]" style={{ aspectRatio: "3/2" }} />
-            <div className="h-[14px]" />
-          </div>
-
-          {/* Extra space for canister area */}
-          <div className="flex-shrink-0" style={{ width: "12vw" }} />
+          {/* Two blank placeholder frames (unexposed film tail) */}
+          {[0, 1].map((i) => (
+            <div
+              key={`blank-${i}`}
+              className="flex-shrink-0 flex flex-col"
+              style={{ width: `${frameWidth}px` }}
+            >
+              {/* Frame number top */}
+              <div className="flex items-center justify-center" style={{ height: "16px" }}>
+                <span
+                  style={{
+                    fontSize: "7px",
+                    letterSpacing: "0.1em",
+                    color: "#8b6914",
+                    opacity: 0.3,
+                  }}
+                >
+                  {String(photos.length + i + 1).padStart(2, "0")}A
+                </span>
+              </div>
+              {/* Unexposed film area */}
+              <div style={{ padding: "0 10px" }}>
+                <div
+                  className="w-full rounded-[1px]"
+                  style={{
+                    height: `${photoHeight}px`,
+                    backgroundColor: "#3a2818",
+                  }}
+                />
+              </div>
+              {/* Frame number bottom */}
+              <div className="flex items-center justify-center" style={{ height: "16px" }}>
+                <span
+                  style={{
+                    fontSize: "7px",
+                    letterSpacing: "0.1em",
+                    color: "#8b6914",
+                    opacity: 0.3,
+                  }}
+                >
+                  {String(photos.length + i + 1).padStart(2, "0")}A
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Bottom perforations */}
-        <div className="h-[16px] bg-[#111] flex items-center px-[6px]">
-          {Array.from({ length: perfCount }).map((_, i) => (
+        <div
+          className="flex items-center"
+          style={{
+            height: "18px",
+            backgroundColor: "#3d2a1a",
+            paddingLeft: "8px",
+            paddingRight: "8px",
+          }}
+        >
+          {Array.from({ length: totalPerfs }).map((_, i) => (
             <div
               key={i}
-              className="w-[7px] h-[5px] rounded-[0.5px] flex-shrink-0 mr-[9px]"
-              style={{ backgroundColor: "#c8c0b0" }}
+              className="flex-shrink-0 rounded-[0.5px]"
+              style={{
+                width: "7px",
+                height: "5px",
+                marginRight: "9px",
+                backgroundColor: "#8b6914",
+                opacity: 0.7,
+              }}
             />
           ))}
         </div>
       </div>
 
-      {/* Canister overlay (fixed right) */}
+      {/* Right-side canister (fixed position) */}
       <div
         className="absolute right-0 top-0 bottom-0 z-10 flex items-center pointer-events-none"
-        style={{ width: "80px" }}
+        style={{ width: "100px" }}
       >
-        {/* Film entering canister shadow */}
-        <div
-          className="absolute left-0 top-0 bottom-0"
-          style={{
-            width: "40px",
-            background:
-              "linear-gradient(to right, transparent, rgba(17,17,17,0.85) 70%, #111)",
-          }}
-        />
         {/* Canister body */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2">
+        <div className="absolute right-2 top-1/2 -translate-y-1/2">
           <div
-            className="rounded-[14px] border-2"
+            className="relative rounded-xl border-2 flex items-center justify-center"
             style={{
               width: "55px",
-              height: "110px",
-              background: "linear-gradient(135deg, #555 0%, #2a2a2a 45%, #3a3a3a 100%)",
+              height: "calc(100% - 20px)",
+              minHeight: `${photoHeight + 60}px`,
+              background:
+                "linear-gradient(135deg, #555 0%, #2a2a2a 45%, #3a3a3a 100%)",
               borderColor: "#555",
-              boxShadow: "inset 0 0 15px rgba(0,0,0,0.4), -4px 0 20px rgba(0,0,0,0.5)",
+              boxShadow:
+                "inset 0 0 15px rgba(0,0,0,0.4), -4px 0 20px rgba(0,0,0,0.5)",
             }}
           >
-            {/* Spool */}
-            <div className="flex items-center justify-center h-full">
-              <div
-                className="rounded-full border-2 flex items-center justify-center"
-                style={{ width: "22px", height: "22px", borderColor: "#777" }}
-              >
-                <div
-                  className="rounded-full"
-                  style={{ width: "8px", height: "8px", background: "#1a1a1a" }}
-                />
-              </div>
-            </div>
-            {/* Film exit slot */}
+            {/* Film exit slot - spans full film height */}
             <div
-              className="absolute"
+              className="absolute rounded-r-[1px]"
               style={{
                 left: 0,
-                top: "28%",
-                width: "3px",
-                height: "44%",
-                background: "#0a0a0a",
-                borderRadius: "0 2px 2px 0",
+                top: "15%",
+                width: "4px",
+                height: "70%",
+                background: "#1a1008",
               }}
             />
+
+            {/* Spool (center) */}
+            <div
+              className="rounded-full border-2 flex items-center justify-center"
+              style={{
+                width: "24px",
+                height: "24px",
+                borderColor: "#777",
+              }}
+            >
+              <div
+                className="rounded-full"
+                style={{
+                  width: "10px",
+                  height: "10px",
+                  background: "#1a1a1a",
+                }}
+              />
+            </div>
+
             {/* Top cap */}
             <div
-              className="absolute left-1/2 -translate-x-1/2 rounded-[6px]"
+              className="absolute left-1/2 -translate-x-1/2 rounded-md"
               style={{
-                top: "-7px",
-                width: "28px",
-                height: "7px",
+                top: "-8px",
+                width: "30px",
+                height: "8px",
                 background: "linear-gradient(to bottom, #666, #444)",
               }}
             />
             {/* Bottom cap */}
             <div
-              className="absolute left-1/2 -translate-x-1/2 rounded-[6px]"
+              className="absolute left-1/2 -translate-x-1/2 rounded-md"
               style={{
-                bottom: "-7px",
-                width: "28px",
-                height: "7px",
+                bottom: "-8px",
+                width: "30px",
+                height: "8px",
                 background: "linear-gradient(to top, #666, #444)",
               }}
             />
+
+            {/* DX code strip */}
+            <div className="absolute right-2 top-1/4 flex flex-col gap-1">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: "6px",
+                    height: "3px",
+                    backgroundColor: i % 2 === 0 ? "#888" : "#444",
+                    borderRadius: "1px",
+                  }}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Right edge fade */}
-      <div
-        className="absolute right-0 top-0 bottom-0 pointer-events-none"
-        style={{
-          width: "120px",
-          background: "linear-gradient(to right, transparent, rgba(250,250,250,0.9))",
-        }}
-      />
+      {/* Right edge fade - removed per user request */}
+      {/* Left edge fade - removed per user request */}
     </div>
   );
 }
